@@ -76,6 +76,7 @@ private:
 	JSValue digitalRead(int argc, JSValueConst *argv);
 	JSValue setTimeout(int argc, JSValueConst *argv);
 	JSValue setInterval(int argc, JSValueConst *argv);
+	JSValue clearTimer(int argc, JSValueConst *argv);
 	JSValue consoleLog(int argc, JSValueConst *argv);
 	JSValue serialWrite(int argc, JSValueConst *argv);
 	JSValue setSerialDataFunc(int argc, JSValueConst *argv);

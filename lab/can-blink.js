@@ -13,7 +13,10 @@ let blink=dev.entry(0x2000,0).setType("bool");
 async function tick() {
 	console.log("timeout...");
 	digitalWrite(8,!digitalRead(8));
-	await blink.set(!blink.get());
+
+	//if (dev.getState()!="disconnected")
+	blink.set(!blink.get());
+
 	setTimeout(tick,1000);
 }
 

@@ -137,6 +137,8 @@ void JsEngine::reset() {
     addGlobal("serialWrite",newMethod(this,&JsEngine::serialWrite,1));
     addGlobal("setTimeout",newMethod(this,&JsEngine::setTimeout,2));
     addGlobal("setInterval",newMethod(this,&JsEngine::setInterval,2));
+    addGlobal("clearTimeout",newMethod(this,&JsEngine::clearTimer,1));
+    addGlobal("clearInterval",newMethod(this,&JsEngine::clearTimer,1));
     addGlobal("setSerialDataFunc",newMethod(this,&JsEngine::setSerialDataFunc,1));
     addGlobal("fileOpen",newMethod(this,&JsEngine::fileOpen,2));
     addGlobal("fileClose",newMethod(this,&JsEngine::fileClose,1));
@@ -373,6 +375,23 @@ JSValue JsEngine::setInterval(int argc, JSValueConst *argv) {
 
     return JS_NewUint32(ctx,t.id);
 }
+
+JSValue JsEngine::clearTimer(int argc, JSValueConst *argv) {
+    uint32_t tid;
+    JS_ToUint32(ctx,&tid,argv[0]);
+
+    auto it=std::find_if(timers.begin(), timers.end(),
+        [&](const JsEngineTimer& t) { return t.id == tid; });
+
+    if (it==timers.end())
+        return JS_UNDEFINED;
+        //return JS_ThrowInternalError(ctx, "invalid timeout id");
+
+    JS_FreeValue(ctx,it->func);
+    timers.erase(it);
+    return JS_UNDEFINED;
+}
+
 
 JSValue JsEngine::fileOpen(int argc, JSValueConst *argv) {
     JsCString path(ctx, argv[0]);
