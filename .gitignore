@@ -4,3 +4,4 @@ node_modules
 .pio
 ext
 pnpm-lock.yaml
+src/boot_js.c
