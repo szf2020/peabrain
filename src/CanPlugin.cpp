@@ -13,20 +13,8 @@ void CanPlugin::setJsEngine(JsEngine& jsEngine_) {
 }
 
 void CanPlugin::init() {
-	jsEngine->addGlobal("canWrite",jsEngine->newMethod(this,&CanPlugin::canWrite,1));
+	jsEngine->addGlobal("canWrite",jsEngine->newMethod(this,&CanPlugin::canWrite,2));
     jsEngine->addGlobal("setCanMessageFunc",jsEngine->newMethod(this,&CanPlugin::setCanMessageFunc,1));
-
-    /*jsEngine->addRawFunction("_malloc",(void*)malloc,1);
-    jsEngine->addRawFunction("_free",(void*)free,1);
-    jsEngine->addRawFunction("_cof_create",(void*)cof_create,0);
-    jsEngine->addRawFunction("_cof_dispose",(void*)cof_dispose,1);
-    jsEngine->addRawFunction("_cof_get",(void*)cof_get,2);
-    jsEngine->addRawFunction("_cof_getp",(void*)cof_getp,2);
-    jsEngine->addRawFunction("_cof_set",(void*)cof_set,3);
-    jsEngine->addRawFunction("_cof_from_slcan",(void*)cof_from_slcan,2);
-    jsEngine->addRawFunction("_cof_to_slcan",(void*)cof_to_slcan,2);
-    jsEngine->addRawFunction("_peek",(void*)peek,1);
-    jsEngine->addRawFunction("_poke",(void*)poke,2);*/
 }
 
 void CanPlugin::loop() {
@@ -59,6 +47,50 @@ void CanPlugin::close() {
 }
 
 JSValue CanPlugin::canWrite(int argc, JSValueConst *argv) {
+    if (argc<2)
+        return JS_ThrowTypeError(jsEngine->getContext(), "too few arguments");
+
+    uint8_t *data;
+    size_t offset, len, bpe;
+    JSValue buffer;
+    uint32_t id;
+
+    JS_ToUint32(jsEngine->getContext(),&id,argv[0]);
+    buffer=JS_GetTypedArrayBuffer(
+        jsEngine->getContext(),
+        argv[1],
+        &offset,
+        &len,
+        &bpe
+    );
+
+    if (JS_IsException(buffer))
+        return JS_EXCEPTION;
+
+    data=JS_GetArrayBuffer(jsEngine->getContext(),&len,buffer);
+    if (!data) {
+        JS_FreeValue(jsEngine->getContext(),buffer);
+        return JS_EXCEPTION;
+    }
+
+    /*if (!data)
+        return JS_ThrowTypeError(jsEngine->getContext(), "typed array expected");*/
+
+    data+=offset;
+
+    cof_t cof;
+    cof.id=id;
+    cof.len=len;
+    for (int i=0; i<len; i++)
+        cof.data[i]=data[i];
+
+    espBus.write(&cof);
+
+    JS_FreeValue(jsEngine->getContext(),buffer);
+    return JS_UNDEFINED;
+}
+
+/*JSValue CanPlugin::canWrite(int argc, JSValueConst *argv) {
     const char *s=JS_ToCString(jsEngine->getContext(),argv[0]);
     if (!s)
 	    return JS_UNDEFINED;
@@ -72,7 +104,7 @@ JSValue CanPlugin::canWrite(int argc, JSValueConst *argv) {
     JS_FreeCString(jsEngine->getContext(),s);
 
     return JS_UNDEFINED;
-}
+}*/
 
 JSValue CanPlugin::setCanMessageFunc(int argc, JSValueConst *argv) {
     JS_FreeValue(jsEngine->getContext(),canMessageFunc);

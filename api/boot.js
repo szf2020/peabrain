@@ -1,6 +1,5 @@
 import Repl from "./Repl.js";
-import {EventEmitter, slcanStringify, slcanParse, RemoteDevice, MasterDevice, awaitEvent} from "canopener";
-import * as CO from "canopener";
+import {EventEmitter, /*slcanStringify,*/ slcanParse, RemoteDevice, MasterDevice, awaitEvent} from "canopener";
 
 global.awaitEvent=awaitEvent;
 global.EventEmitter=EventEmitter;
@@ -41,10 +40,12 @@ repl.on("message",message=>{
 
 global.canBus=new EventEmitter();
 global.canBus.write=message=>{
-	let s=slcanStringify(message);
-	//console.log("writing can: "+s);
-	canWrite(s);
+	//console.log("writing can: "+JSON.stringify(message));
+	//let s=slcanStringify(message);
+	//canWrite(s);
 	//console.log("writing can: "+s);//JSON.stringify(message));
+
+	canWrite(message.id,message.data);
 }
 
 global.canBus.send=global.canBus.write;
