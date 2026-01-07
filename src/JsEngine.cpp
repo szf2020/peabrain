@@ -158,6 +158,7 @@ void JsEngine::reset() {
         bootError=getExceptionMessage();
 
     JS_FreeValue(ctx, val);
+    JS_RunGC(rt);
 
     if (JS_IsUndefined(bootError) && runEnabled) {
         File f = SPIFFS.open("/boot.js", FILE_READ);
@@ -178,6 +179,8 @@ void JsEngine::reset() {
     }
 
     addGlobal("bootError",JS_DupValue(ctx,bootError));
+
+    JS_RunGC(rt);
 
     startCount++;
     stream.printf("Started, count=%d\n",startCount);
