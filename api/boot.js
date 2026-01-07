@@ -54,3 +54,8 @@ setCanMessageFunc(message=>{
 	global.canBus.emit("message",slcanParse(message));
 	//console.log("can message: "+message);
 });
+
+/*setCanMessageFunc((id, data)=>{
+	global.canBus.emit("message",{id, data});//slcanParse(message));
+	//console.log("can message: "+message);
+});*/
